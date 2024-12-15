@@ -1,0 +1,38 @@
+log:
+    level: DEBUG   # Log level, options: ERROR, WARN, INFO, DEBUG
+    filePath: "/var/log/traefik/traefik.log"
+    maxBackups: 3
+  accessLog:
+    filePath: "/var/log/traefik/access.log"
+    bufferingSize: 100 
+    filters:
+      statusCodes: ["200-399"]
+    format: json
+  api:
+    dashboard: true # Optional can be disabled
+    insecure: true # Optional can be disabled
+    debug: true # Optional can be Enabled if needed for troubleshooting 
+  entryPoints:
+    web:
+      address: ":80"
+      http:
+        redirections:
+          entryPoint:
+            to: websecure
+            scheme: https
+    websecure:
+      address: ":443"
+  providers:
+    docker:
+      endpoint: "unix:///var/run/docker.sock"
+      exposedByDefault: false
+      network: proxy # Optional; Only use the "proxy" Docker network, even if containers are on multiple networks.
+  certificatesResolvers:
+    bunny:
+      acme:
+        email: example@email.com # Change this to your email
+        storage: /certs/acme.json
+        caServer: https://acme-v02.api.letsencrypt.org/directory
+        dnsChallenge:
+          provider: bunny
+          delayBeforeCheck: 90

@@ -1,0 +1,36 @@
+services:
+    php:
+        build: php
+        expose:
+            - 9000
+        volumes:
+            - ./php/www:/var/www/html
+    apache2:
+        image: webdevops/apache:latest
+        args:
+            - PHP_SOCKET=php:9000
+        volumes:
+            - ./php/www:/var/www/html
+        links:
+            - php
+        labels:
+            - "traefik.enable=true"
+            - "traefik.http.routers.mywebsite.rule=Host(`it-m.art`)"
+            - "traefik.http.routers.mywebsite.entrypoints=websecure"
+            - "traefik.http.routers.mywebsite.tls=true"
+            - "traefik.http.routers.mywebsite.tls.certresolver=bunny"
+            - "traefik.http.routers.mywebsite.service=service-mywebsite"
+            - "traefik.http.services.service-mywebsite.loadbalancer.server.port=80"
+            - "traefik.docker.network=network_traefik_external"
+        networks:
+            - webserver
+            - traefik
+        restart: always
+volumes:
+    mysql_vol:
+        external: false
+networks:
+  webserver:
+  traefik:
+    external: true
+    name: network_traefik_external

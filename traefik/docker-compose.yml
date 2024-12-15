@@ -1,0 +1,37 @@
+services:
+  traefik:
+    image: traefik:v3.0
+    container_name: traefik
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+
+    environment:
+      - TZ=Europe/Amsterdam # Change this to your timezone
+      - BUNNY_API_KEY=xxxxxxxxxxx*
+      - "--log.level=DEBUG"
+
+    networks:
+      - traefik-internal
+      - traefik-external
+
+    ports:
+      - 80:80 # HTTP entryPoints
+      - 443:443 # HTTPS entryPoints
+      - 8080:8080 # Dashboard WebGui
+
+    volumes:
+    - ./traefik.yml:/traefik.yml:ro
+    - ./logs:/var/log/traefik
+    - traefik-certs:/certs
+    - /var/run/docker.sock:/var/run/docker.sock:ro
+
+volumes:
+  traefik-certs:
+    name: traefik-certs
+
+networks:
+  traefik-internal:
+  traefik-external:
+    name: network_traefik_external
+    external: true
